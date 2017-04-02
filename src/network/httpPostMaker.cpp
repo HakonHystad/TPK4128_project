@@ -39,8 +39,8 @@ RETURN:
 ==============================================================================================================*/
 
 HttpPostMaker::HttpPostMaker( int clientID, std::string domain /*=""*/)
-    : firstBody(true),
-      ServerClientCom( clientID )
+    : ServerClientCom( clientID ),
+      firstBody(true)
 {
     if( domain != "" )
 	setDomain( domain );
@@ -71,9 +71,9 @@ RETURN:
 
 ==============================================================================================================*/
 
-void send()
+void HttpPostMaker::send()
 {
-    sendMsg( getPost );
+    sendMsg( getPOST() );
 }
 
 /*=============================================================================================================

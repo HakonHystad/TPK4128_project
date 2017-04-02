@@ -34,6 +34,7 @@ Section:                                          ~Class ServerClientCom
 class ServerClientCom
 {
 public:
+    ServerClientCom();// empty default to allow inheritance
 	ServerClientCom(int socketId);// constructor
 	~ServerClientCom();
 

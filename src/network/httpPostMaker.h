@@ -28,7 +28,7 @@ Section:                                          ~class declaration
 
 #############################################################################################################*/
 
-class HttpPostMaker : public serverClientCom
+class HttpPostMaker : public ServerClientCom
 {
 public:
 

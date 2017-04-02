@@ -2,6 +2,19 @@
 
 /*=============================================================================================================
 
+NAME:                                             ~ServerClientCom(default constructor)
+ARGUMENT(S):
+DESCRIPTION:
+RETURN:
+
+==============================================================================================================*/
+ServerClientCom::ServerClientCom()
+{
+    //empty
+}
+
+/*=============================================================================================================
+
 NAME:                                             ~ServerClientCom
 ARGUMENT(S): the file desrictor to a socket (listening server or client)
 DESCRIPTION: initialize the socket Id

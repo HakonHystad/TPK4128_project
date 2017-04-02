@@ -20,6 +20,7 @@ Section:                                          ~libs
 #include <string>
 #include <iostream>
 
+#include "serverClientCom.h"
 
 /*#############################################################################################################
 
@@ -27,15 +28,17 @@ Section:                                          ~class declaration
 
 #############################################################################################################*/
 
-class HttpPostMaker
+class HttpPostMaker : public serverClientCom
 {
 public:
 
     HttpPostMaker();
-    HttpPostMaker( std::string domain );
+    HttpPostMaker( int clientID, std::string domain="" );
 
     
     void setDomain( std::string domain );
+
+    void send();
 
     std::string bodyLength();
     void addToBody( std::string bodyItem );

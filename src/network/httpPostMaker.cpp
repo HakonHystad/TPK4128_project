@@ -38,17 +38,19 @@ RETURN:
 
 ==============================================================================================================*/
 
-HttpPostMaker::HttpPostMaker( std::string domain)
-    : firstBody(true)
+HttpPostMaker::HttpPostMaker( int clientID, std::string domain /*=""*/)
+    : firstBody(true),
+      ServerClientCom( clientID )
 {
-    setDomain( domain );
+    if( domain != "" )
+	setDomain( domain );
 }
 
 /*=============================================================================================================
 
 NAME:                                             ~setDomain
 ARGUMENT(S):
-DESCRIPTION: set the domain and makes the header
+DESCRIPTION: set the domain and make the header
 RETURN:
 
 ==============================================================================================================*/
@@ -58,6 +60,20 @@ void HttpPostMaker::setDomain( std::string domain )
     m_header = "POST " + domain + " HTTP/1.1\nContent-Type: application/x-www-form-urlencoded\nHost: \nContent-Length: ";
 
     m_domain = domain;
+}
+
+/*=============================================================================================================
+
+NAME:                                             ~send
+ARGUMENT(S):
+DESCRIPTION: send the made packet
+RETURN:
+
+==============================================================================================================*/
+
+void send()
+{
+    sendMsg( getPost );
 }
 
 /*=============================================================================================================

@@ -207,6 +207,11 @@ void MFrec::crackKey( byte command, byte blockAddr_e, byte blockAddr_a, byte *ke
 			  << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
 			  << "Time to crack: " << totalElapsed << std::endl;
 
+		for( int i = 0; i<6; i++ )//store it
+		{
+		    p_keys[blockAddr_a/4][i] = plausibleKey[i];
+		}
+
 		// clean up
 		pthread_mutex_destroy(&m_lock);
 		for( int sets = 0; sets>SETS_NR; sets++ )

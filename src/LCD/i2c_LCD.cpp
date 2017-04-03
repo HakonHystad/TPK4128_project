@@ -171,7 +171,7 @@ RETURN:
 void I2C_LCD::wData( int data )
 {
     msg |= Rs;
-    std::cout << "wData: " << std::hex << data << std::dec << std::endl;
+    //std::cout << "wData: " << std::hex << data << std::dec << std::endl;
     send( data );
 }
 

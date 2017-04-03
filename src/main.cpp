@@ -77,7 +77,7 @@ int main()
 
     for( int sector = 0; sector<16; sector++)
     {
-	
+	std::cout << "Sector: " << sector << std::endl;
 	LCD.print( "Sector " + std::to_string( sector ), 0, 0 );
 
 	if( !RFID.authenticateOnChip( AUTHENT_A, sector*4 ) )// takes blockAddr, not sector..
@@ -123,6 +123,7 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 
     for( int blk = 0; blk<4; blk++ )
     {
+	
 	// reset block
 	for( int i = 0; i<16; i++) block[i] = 'X';
 
@@ -140,13 +141,13 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 	{
 	    if( !locked )
 	    {
-		ss << var2 << i << "=" << std::hex << (int)block[i] << std::dec;
+		ss << var2 << i << "=" << std::hex << (int)block[i-1] << std::dec;
 		post->addToBody( ss.str() );
 		ss.str("");// clear stream
 
-		if( block[i] >=32 && block[i]<127 )// readable char
+		if( block[i-1] >=32 && block[i-1]<127 )// readable char
 		{
-		    asciiRep += (char)block[i];
+		    asciiRep += (char)block[i-1];
 		}
 		else
 		{
@@ -155,7 +156,7 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 	    }//if !locked
 	    else
 	    {
-		post->addToBody( var2 + std::to_string(i) + "=" + (char)block[i] );// write X'es
+		post->addToBody( var2 + std::to_string(i) + "=" + (char)block[i-1] );// write X'es
 	    }
 		
         
@@ -167,9 +168,10 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 	}
 	else
 	{
-	    post->addToBody( var3 + "=<LOCKED>" );
+	    post->addToBody( var3 + "=LOCKED" );
 	}
 
+	std::cout << post->getPOST() << std::endl;
 	post->send();
     }// for each block
 

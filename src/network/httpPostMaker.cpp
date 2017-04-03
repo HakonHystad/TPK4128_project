@@ -74,6 +74,8 @@ RETURN:
 void HttpPostMaker::send()
 {
     sendMsg( getPOST() );
+
+    clearBody();
 }
 
 /*=============================================================================================================
@@ -109,6 +111,7 @@ RETURN:
 
 void HttpPostMaker::clearBody()
 {
+    firstBody = true;
     m_body.clear();
 }
 
@@ -139,9 +142,6 @@ RETURN: formated post request as c-string
 std::string HttpPostMaker::getPOST()
 {
     std::string POSTreq = m_header + bodyLength() + m_body;
-
-    clearBody();
-    firstBody = true;
 
     return POSTreq;
 }

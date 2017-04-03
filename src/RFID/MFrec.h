@@ -85,7 +85,7 @@ public:
 
     /*-------------------------------------- key recovery  ---------------------------------------*/
 
-    void crackKey( byte command, byte blockAddr_e, byte blockAddr_a, byte *key = nullptr );// helper function
+    bool crackKey( byte command, byte blockAddr_e, byte blockAddr_a, byte *key = nullptr );
 
 protected:
 

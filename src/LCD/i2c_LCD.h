@@ -101,8 +101,9 @@ public:
 
     void init();
 
-    //void setCursor( uint8_t row, uint8_t col );
+    void setCursor( uint8_t row, uint8_t col );
     void print( std::string data );
+    void print( std::string data, uint8_t row, uint8_t col );
 
 protected:
     virtual void setupCOM()=0;// abstract

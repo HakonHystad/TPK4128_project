@@ -103,7 +103,7 @@ RETURN:
 
 void HdmiI2C::write( uint8_t msg )
 {
-    std::cout << "writeI2C: " << std::hex << (int)msg << std::dec << std::endl;
+    //std::cout << "writeI2C: " << std::hex << (int)msg << std::dec << std::endl;
     
     *(m_p->addr + I2C_DLEN) = 1;// 1 byte
 
@@ -111,12 +111,13 @@ void HdmiI2C::write( uint8_t msg )
 
     *(m_p->addr + I2C_S) = CLEAR_STATUS;
     
-
+/*
     std::cout << "C: " << std::hex << *(m_p->addr + I2C_C)
 	      << "\nS: " << *(m_p->addr + I2C_S)
 	      << "\nDLEN: " << *(m_p->addr + I2C_DLEN)
 	      << "\nA: " << *(m_p->addr + I2C_A)
 	      << "\nFIFO: " << *(m_p->addr + I2C_FIFO) << std::dec << std::endl;
+*/
     *(m_p->addr + I2C_C) = START_WRITE;
 
     wait();

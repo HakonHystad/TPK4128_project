@@ -58,7 +58,7 @@ int main()
     if( clientSocketId <0 )
     {
 	std::cerr << "no clientSocket\n";
-	LCD.print( "Failed connection" );
+	LCD.print( "Failed connection", 0, 0 );
 	return -1;
     }
 
@@ -78,7 +78,7 @@ int main()
     for( int sector = 0; sector<16; sector++)
     {
 	
-	LCD.print( "Sector " + std::to_string( sector ) );
+	LCD.print( "Sector " + std::to_string( sector ), 0, 0 );
 
 	if( !RFID.authenticateOnChip( AUTHENT_A, sector*4 ) )// takes blockAddr, not sector..
 	{
@@ -96,7 +96,7 @@ int main()
 
     if( nrOfLockedSectors>15 )
     {
-	LCD.print( "No default" );
+	LCD.print( "No default", 0,0 );
 	std::cout << "No sectors use a default key\n";
 	return 0;
     }
@@ -142,6 +142,7 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 	    {
 		ss << var2 << i << "=" << std::hex << (int)block[i] << std::dec;
 		post->addToBody( ss.str() );
+		ss.str("");// clear stream
 
 		if( block[i] >=32 && block[i]<127 )// readable char
 		{

@@ -205,6 +205,24 @@ void I2C_LCD::home()
     delayMicroseconds( 2000 );
 }
 
+/*=============================================================================================================
+
+NAME:                                            ~setCursor
+ARGUMENT(S):
+DESCRIPTION: places the cursor in RAM
+RETURN:
+
+==============================================================================================================*/
+
+void I2C_LCD::setCursor( uint8_t row, uint8_t col )
+{
+    if( row>1 ) row = 1;
+    if( col>15 ) col = 15;
+    
+    send( LCD_SETDDRAMADDR | (row*64 + col) );// 16 columns of 4 bytes per row
+}
+
+
 
 /*=============================================================================================================
 
@@ -228,4 +246,20 @@ void I2C_LCD::print( std::string data )
 	wData( i );
     }
     
+}
+
+/*=============================================================================================================
+
+NAME:                                             ~print
+ARGUMENT(S):
+DESCRIPTION: set the cursor before printing 
+RETURN:
+
+==============================================================================================================*/
+
+void I2C_LCD::print( std::string data, uint8_t row, uint8_t col )
+{
+    setCursor( row, col );
+
+    print( data );
 }

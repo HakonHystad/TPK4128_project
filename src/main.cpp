@@ -14,6 +14,7 @@ Section:                                          ~libs
 
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #include "RFID/MFrec.h"
 #include "LCD/hdmiLCD.h"
@@ -72,7 +73,7 @@ int main()
 
     int lockedSectors[16];
     int nrOfLockedSectors = 0;
-    int unlockedSector = 0;
+    int exploitSector = 0;
 
     for( int sector = 0; sector<16; sector++)
     {
@@ -87,7 +88,7 @@ int main()
 	}
 	else
 	{
-	    unlockedSector = sector;
+	    exploitSector = sector;
 	    sendSector( &RFID, sector, &REQ, false );
 	}
 
@@ -117,7 +118,8 @@ RETURN:
 ==============================================================================================================*/
 void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 {
-    unsigned char block[18]; 
+    unsigned char block[18];
+    std::stringstream ss;
 
     for( int blk = 0; blk<4; blk++ )
     {
@@ -134,24 +136,42 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 	// convert to ascii if possible
 	std::string asciiRep="";
 	    
-	for( int i = 0; i<16; i++ )
+	for( int i = 1; i<=16; i++ )
 	{
-	    post->addToBody( var2 + std::to_string(i) + "=" + std::to_string( (int)block[i] ) );
-        
-	    if( block[i] >=32 && block[i]<127 )// readable char
+	    if( !locked )
 	    {
-		asciiRep += std::to_string( (int)block[i] );// assuring no truncation with to_string
-	    }
+		ss << var2 << i << "=" << std::hex << (int)block[i] << std::dec;
+		post->addToBody( ss.str() );
+
+		if( block[i] >=32 && block[i]<127 )// readable char
+		{
+		    asciiRep += (char)block[i];
+		}
+		else
+		{
+		    asciiRep += ".";
+		}
+	    }//if !locked
 	    else
 	    {
-		asciiRep += ".";
+		post->addToBody( var2 + std::to_string(i) + "=" + (char)block[i] );// write X'es
 	    }
+		
+        
+	}// for each byte
+
+	if( !locked )
+	{
+	    post->addToBody( var3 + "=" + asciiRep );
+	}
+	else
+	{
+	    post->addToBody( var3 + "=<LOCKED>" );
 	}
 
-	post->addToBody( var3 + "=" + asciiRep );
+	post->send();
     }// for each block
 
-    post->send();
 }
 
 

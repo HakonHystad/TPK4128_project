@@ -77,6 +77,7 @@ int main()
     int nrOfLockedSectors = 0;
     int exploitSector = 0;
 
+   
     for( int sector = 0; sector<16; sector++)
     {
 	
@@ -94,6 +95,9 @@ int main()
 
     }// for each sector
 
+    RFID.stop();
+    RFID.initCom();
+
     if( nrOfLockedSectors>15 )
     {
 	LCD.print( "No default", 0,0 );
@@ -102,25 +106,30 @@ int main()
     }
 
     /*-------------------------------------- recover the locked sectors  ---------------------------------------*/
-
-    int nrOfRecoveredKeys = 0;
     
-    LCD.print( "Recovey", 0, 4 );
+    int nrOfRecoveredKeys = 0;
+
+    LCD.clear();
+    LCD.print( "Recovery", 0, 4 );
     for( int sector = 0; sector<nrOfLockedSectors; sector++ )
     {
-	LCD.print( "Sector " + std::to_string(sector), 1, 0 );
+	LCD.print( "Sector " + std::to_string( lockedSectors[sector] ), 1, 4 );
 	
-	if( crackKey( AUTHENT_A, exploitSector*4, lockedSectors[sector]*4 ) )
+	if( RFID.crackKey( AUTHENT_A, exploitSector*4, lockedSectors[sector]*4 ) )
 	{
 	    nrOfRecoveredKeys++;
 	    RFID.initCom();
 	    sendSector( &RFID, sector, &REQ, false );// class has now updated the key
 	}
+	RFID.stop();
+	RFID.initCom();
     }
 
     std::cout << "Nr of recovered keys: " << nrOfRecoveredKeys << std::endl;
+
+    LCD.clear();
     LCD.print( "Keys recovered: ", 0,0 );
-    LCD.print( std::to_string( nrOfKeysRecovered ), 1, 7 );
+    LCD.print( std::to_string( nrOfRecoveredKeys ), 1, 7 );
 
     
 

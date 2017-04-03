@@ -219,7 +219,7 @@ void I2C_LCD::setCursor( uint8_t row, uint8_t col )
     if( row>1 ) row = 1;
     if( col>15 ) col = 15;
     
-    send( LCD_SETDDRAMADDR | (row*64 + col) );// 16 columns of 4 bytes per row
+    command( LCD_SETDDRAMADDR | (row*64 + col) );// 16 columns of 4 bytes per row
 }
 
 

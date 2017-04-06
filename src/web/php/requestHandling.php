@@ -44,12 +44,10 @@ include_once("keywords.php");
 		$user = "haakonhy_tpk4128";
 		$db = "haakonhy_raspberryProject";
 
-		// naive way of restricting data manipulation access
-
-
+		// naive way of restricting data manipulation and finally database access
 		if( $token == $GLOBALS['POSTpass'] )
 		{
-		    $psswd = $GLOBALS['pass'];
+		    $psswd = $GLOBALS['pass'];// in case the plaitext POSTpass is found, you are still not getting my database pass
 		}
 		else
 		{

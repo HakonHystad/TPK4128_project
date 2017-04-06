@@ -89,6 +89,9 @@ bool MFrec::crackKey( byte command, byte blockAddr_e, byte blockAddr_a, byte *ke
 
     const int delayTime = 10;
 
+    resetPICC( delayTime );
+    initCom();
+
     
     /*-------------------------------------- RECOVERY LOOP  ---------------------------------------*/
     for( int probe = 0; probe < PROBE_NR; probe++ )
@@ -222,7 +225,9 @@ bool MFrec::crackKey( byte command, byte blockAddr_e, byte blockAddr_a, byte *ke
 		    possibleKeys[sets].clear();
 		}
 
+		
 		resetPICC( delayTime );
+		parityOn();
 		return true;
 	    }
 	    
@@ -248,6 +253,7 @@ bool MFrec::crackKey( byte command, byte blockAddr_e, byte blockAddr_a, byte *ke
     std::cout << "Could not find key, time elapsed: " << totalElapsed << std::endl;
 
     resetPICC( delayTime );
+    parityOn();
     return false;
 }// crackKey
 

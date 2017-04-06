@@ -15,6 +15,8 @@ Section:                                          ~libs
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <unistd.h>
+#include <sys/socket.h>
 
 #include "RFID/MFrec.h"
 #include "LCD/hdmiLCD.h"
@@ -86,6 +88,10 @@ int main()
 	    lockedSectors[ nrOfLockedSectors++ ] = sector;
 	    sendSector( &RFID, sector, &REQ, true );
 
+	    RFID.stop();
+	    RFID.initCom();
+	     
+
 	}
 	else
 	{
@@ -95,15 +101,16 @@ int main()
 
     }// for each sector
 
-    RFID.stop();
-    RFID.initCom();
-
     if( nrOfLockedSectors>15 )
     {
 	LCD.print( "No default", 0,0 );
 	std::cout << "No sectors use a default key\n";
 	return 0;
     }
+
+    // recovery takes a while, keep the socket alive
+    int val = 1;
+    setsockopt(clientSocketId, SOL_SOCKET, SO_KEEPALIVE, &val, sizeof val);
 
     /*-------------------------------------- recover the locked sectors  ---------------------------------------*/
     
@@ -114,15 +121,20 @@ int main()
     for( int sector = 0; sector<nrOfLockedSectors; sector++ )
     {
 	LCD.print( "Sector " + std::to_string( lockedSectors[sector] ), 1, 4 );
+
+	RFID.stop();
 	
 	if( RFID.crackKey( AUTHENT_A, exploitSector*4, lockedSectors[sector]*4 ) )
 	{
+	    /*
+	    std::cout << "test: ";
+	    std::cout << REQ.sendMsg( "hey" ) << std::endl;
+	    std::cout << REQ.recvMsg();
+	    */
 	    nrOfRecoveredKeys++;
 	    RFID.initCom();
-	    sendSector( &RFID, sector, &REQ, false );// class has now updated the key
+	    sendSector( &RFID, lockedSectors[sector], &REQ, false );// class has now updated the key
 	}
-	RFID.stop();
-	RFID.initCom();
     }
 
     std::cout << "Nr of recovered keys: " << nrOfRecoveredKeys << std::endl;
@@ -132,7 +144,6 @@ int main()
     LCD.print( std::to_string( nrOfRecoveredKeys ), 1, 7 );
 
     
-
     return 0;
 
 }
@@ -157,12 +168,15 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 	// reset block
 	for( int i = 0; i<16; i++) block[i] = 'X';
 
+	
 	if( !locked )
-	    rfid->readBlock( (sector*4) + blk, block, 18 );// 16 data bytes + 2 checksum bytes
-
+	{
+	    if(!rfid->readBlock( (sector*4) + blk, block, 18 ) )// 16 data bytes + 2 checksum bytes
+	       locked=true;
+	}
 	/* POST variables are hidden since this is public */
 	post->addToBody( var1 + "=" + std::to_string( (sector*4)+blk ) );
-
+      
 	
 	// convert to ascii if possible
 	std::string asciiRep="";
@@ -202,8 +216,12 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 	}
 
 	post->addToBody( var4 + "=" + password );
-	std::cout << post->getPOST() << std::endl;
+	//std::cout << post->getPOST() <<"\n\n";
+	std::cout << "Sending? ";
+   
 	post->send();
+	post->recvMsg();
+	usleep(10);
     }// for each block
 
 }

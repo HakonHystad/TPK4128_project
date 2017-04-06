@@ -20,7 +20,7 @@ Section:                                          ~libs
 #include <string>
 #include <iostream>
 
-#include "serverClientCom.h"
+#include "standardsocket.h"
 
 /*#############################################################################################################
 
@@ -28,17 +28,24 @@ Section:                                          ~class declaration
 
 #############################################################################################################*/
 
-class HttpPostMaker : public ServerClientCom
+class HttpPostMaker : public StandardSocket
 {
 public:
 
     HttpPostMaker();
-    HttpPostMaker( int clientID, std::string domain="" );
-
+    HttpPostMaker( std::string *hostname, int port, int modus, std::string domain="" );
+    ~HttpPostMaker();
+    
+    int connect();
     
     void setDomain( std::string domain );
 
-    void send();
+    int sendMsg(std::string msg);
+    bool sendPOST();
+    int receive( char *buffer, int bufferSize );
+
+    bool isConnected();
+    
 
     std::string bodyLength();
     void addToBody( std::string bodyItem );
@@ -47,6 +54,8 @@ public:
     std::string getPOST();
 
 private:
+
+    int m_socket_fd;
 
     bool firstBody;
     

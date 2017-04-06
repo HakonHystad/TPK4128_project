@@ -52,6 +52,7 @@ class StandardSocket
     
 public:
     //Constructor
+    StandardSocket();
     StandardSocket(const std::string *p_hostname, int port, int modus);
     //destructor
     ~StandardSocket();

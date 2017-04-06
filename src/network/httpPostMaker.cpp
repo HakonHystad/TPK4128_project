@@ -38,12 +38,35 @@ RETURN:
 
 ==============================================================================================================*/
 
-HttpPostMaker::HttpPostMaker( int clientID, std::string domain /*=""*/)
-    : ServerClientCom( clientID ),
+HttpPostMaker::HttpPostMaker( std::string *hostname, int port, int modus, std::string domain /*=""*/)
+    : StandardSocket( hostname, port, modus ),
       firstBody(true)
 {
     if( domain != "" )
 	setDomain( domain );
+}
+
+HttpPostMaker::~HttpPostMaker()
+{
+    close( m_socket_fd );
+}
+
+/*=============================================================================================================
+
+NAME:                                             ~connect
+ARGUMENT(S):
+DESCRIPTION:
+RETURN:
+
+==============================================================================================================*/
+
+int HttpPostMaker::connect()
+{
+    connectToServer();
+
+    m_socket_fd = getSocketIdentity();
+
+    return m_socket_fd;
 }
 
 /*=============================================================================================================
@@ -71,11 +94,89 @@ RETURN:
 
 ==============================================================================================================*/
 
-void HttpPostMaker::send()
+int HttpPostMaker::sendMsg( std::string msg )
 {
-    sendMsg( getPOST() );
+
+    const char *message = msg.c_str();
+    size_t length = strlen( message );
+
+    int bytesSent = send( m_socket_fd, message, length, 0 );
+    
+    if ( bytesSent == -1 )
+    {
+	std::cout<<"Could not send\n";
+	perror("send(..)");
+    }
+    else if ( bytesSent == 0 )
+    {
+	std::cout<<"Other end closed connection\n";
+    }
+
+    return bytesSent;
+}
+
+/*=============================================================================================================
+
+NAME:                                             ~sendPOST
+ARGUMENT(S):
+DESCRIPTION:
+RETURN:
+
+==============================================================================================================*/
+
+bool HttpPostMaker::sendPOST()
+{
+    int status = sendMsg( getPOST() );
+    
+    if( status<=0 )
+	return false;
 
     clearBody();
+    return true;
+}
+
+/*=============================================================================================================
+
+NAME:                                             ~receive
+ARGUMENT(S):
+DESCRIPTION:
+RETURN:
+
+==============================================================================================================*/
+
+int HttpPostMaker::receive( char *buffer, int bufferSize )
+{
+    int bytesRecvd = recv( m_socket_fd, buffer, bufferSize-1, 0);
+
+    if ( bytesRecvd == -1 )// return
+    {
+	std::cerr<<"Could not receive\n";
+	perror("recv(..)");
+    }
+    else if ( bytesRecvd == 0 )
+    	std::cerr<<"Other end closed connection\n";
+     
+
+    return bytesRecvd;
+}
+
+/*=============================================================================================================
+
+NAME:                                             ~isConnected
+ARGUMENT(S):
+DESCRIPTION:
+RETURN:
+
+==============================================================================================================*/
+
+bool HttpPostMaker::isConnected()
+{
+    char c;
+    int byteRead = recv( m_socket_fd, &c, 1, MSG_PEEK );
+
+    if( byteRead<=0)
+	return false;
+    return true;
 }
 
 /*=============================================================================================================

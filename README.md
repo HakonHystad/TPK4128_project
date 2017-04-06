@@ -8,7 +8,7 @@ Project description:
 
 I choose to implement the mifare nested attack (RFID crypto key crack) on a cheap RFID reader largely used by arduino enthusiasts, check out https://github.com/HakonHystad/MFRC522_nested_attack for more info. I also made a top level driver to utilize the HDMI port's I2C for an alpha-numerical 1602 LCD screen showing status messages, check out https://github.com/HakonHystad/pi_HDMI_to_LCD for more info.
 
-To interface the web I wrote a socket and use HTTP POST request to send the retrived RFID data. This is all done in C++. The website is hosted on NTNU servers and consists of a couple of minimal pages in HTML to display the info. The POST requests are handled in PHP and uses MYSQL to store the information. To update the information I poll another PHP script (with AJAX) which gets the data from the SQL server.
+To interface the web I wrote a class which inherits from a socket base class to build a POST request and send the retrived RFID data. This is all done in C++. The website is hosted on NTNU servers and consists of a couple of minimal pages in HTML to display the info. The POST requests are handled in PHP and uses MYSQL to store the information. To update the information I poll another PHP script (with AJAX) which gets the data from the SQL server.
 
 Project run:
 

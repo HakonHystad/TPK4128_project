@@ -120,6 +120,12 @@ int main()
 	    {
 		delete post;
 		auto post = new HttpPostMaker( &serverName, 80, STREAM, domain );
+		if( post->connect()<=0  )
+		{
+		    std::cerr << "no clientSocket\n";
+		    lcd.print( "Failed connection", 0, 0 );
+		    return -1;
+		}
 	    }
 	    
 	    rfid.initCom();
@@ -209,9 +215,9 @@ void sendSector( MFrec *rfid, int sector, HttpPostMaker *post, bool locked )
 	post->addToBody( var4 + "=" + password );
    
 	post->sendPOST();
-	post->receive( buffer, 4096 );
-	for( auto c : buffer )
-	    std::cout << c;
+	int len = post->receive( buffer, 4096 );
+	for( int c = 0; c<len; c++ )
+	    std::cout << buffer[c];
 	std::cout << std::endl;
 	usleep(10);
     }// for each block
